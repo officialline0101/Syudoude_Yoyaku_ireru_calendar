@@ -396,20 +396,35 @@ if (!formData.name || !formData.phone) {
     return;
 }
 
-            // LINEトークにメッセージを送信
+   // Google Apps ScriptのURLにデータを送信
+    const url = 'https://script.google.com/macros/s/AKfycbzW1JjW4-T1zhUhIpqz7M8jvtnZy5kbgOwV6Utc6xoeQhGL9NzGnKn79MDj1dnkd0WSnQ/exec';
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('予約が完了しました。当日キャンセルは無いようにお願いいたします。キャンセル料発生いたします。');
             liff.sendMessages([{
                 type: 'text',
-                text: `【予約フォーム】\nお名前：${formData.name}\n電話番号：${formData.phone}\nコース：${formData.selectedSymptom}${formData.visitCount}${formData.irradiationsCount}\nネイル：【${formData.visitCount}】\n希望日時：\n ${formData.dates[0]}\nメッセージ：${formData.message}`
+                text: `【予約完了】\nお名前：${formData.name}\n電話番号：${formData.phone}\nコース：${formData.selectedSymptom} ${formData.visitCount} ${formData.irradiationsCount}\n希望日時：${formData.dates[0]}\nメッセージ：${formData.message}`
             }]).then(() => {
-                /* メッセージ送信成功時の処理 */
-                alert('当日キャンセルは無いようにお願いいたします。キャンセル料発生いたします。');
-                /* LIFFウィンドウを閉じる */
                 liff.closeWindow();
-            }).catch((err) => {
-                /* メッセージ送信失敗時の処理 */
-                console.error('メッセージの送信に失敗しました', err);
             });
+        } else {
+            alert('予約に失敗しました。もう一度お試しください。');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('予約中にエラーが発生しました。');
+    });
+}
 
 function formatDate(dateStr) {
     if (!dateStr) return '';
